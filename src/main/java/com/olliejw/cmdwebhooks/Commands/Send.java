@@ -28,10 +28,11 @@ public class Send implements CommandExecutor {
                 webhook.setContent(toSend);
 
                 try {
-                    webhook.execute();
+                    webhook.executeAsync();
                     sender.sendMessage(ChatColor.GREEN + "Sent message!");
                 } catch (Exception e) {
-                    System.out.println("ERROR SENDING VOTE WEBHOOK!");
+                    System.out.println("ERROR SENDING WEBHOOK: " + e.getMessage());
+                    e.printStackTrace();
                 }
 
             } else {

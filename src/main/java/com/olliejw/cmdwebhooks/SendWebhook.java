@@ -136,6 +136,16 @@ public class SendWebhook {
         }
     }
 
+    public void executeAsync() {
+        new Thread(() -> {
+            try {
+                this.execute();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
     private class JSONObject {
         private final HashMap<String, Object> map;
 

@@ -28,11 +28,10 @@ public class OnCmd implements Listener {
         webhook.setContent(toSend);
 
         try {
-            webhook.execute();
-        } catch (MalformedURLException var5) {
+            webhook.executeAsync();
+        } catch (Exception e) {
             System.out.println("[CmdWebhook] Error sending Webhook!");
-        } catch (IOException var6) {
-            var6.printStackTrace();
+            e.printStackTrace();
         }
     }
 }

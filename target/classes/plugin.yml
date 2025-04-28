@@ -1,5 +1,5 @@
 name: CmdWebhooks
-version: ${project.version}
+version: 1.0.0
 main: me.olliejw.cmdwebhooks.CmdWebhooks
 api-version: 1.16
 authors: [ OllieJW ]

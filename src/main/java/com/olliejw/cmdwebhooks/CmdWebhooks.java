@@ -83,13 +83,11 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
         webhook.setContent(message);
 
         try {
-            webhook.execute();
-        } catch (MalformedURLException var4) {
+            webhook.executeAsync();
+        } catch (Exception e) {
             System.out.println("[CmdWebhook] Invalid webhook");
-        } catch (IOException var5) {
-            var5.printStackTrace();
+            e.printStackTrace();
         }
-
     }
 
     public void onDisable() {

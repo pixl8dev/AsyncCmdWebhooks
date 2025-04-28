@@ -1,0 +1,16 @@
+me/olliejw/cmdwebhooks/Events/OnCmd.class
+me/olliejw/cmdwebhooks/Events/OnMsg.class
+me/olliejw/cmdwebhooks/SendWebhook$EmbedObject.class
+me/olliejw/cmdwebhooks/SendWebhook$JSONObject.class
+me/olliejw/cmdwebhooks/SendWebhook.class
+me/olliejw/cmdwebhooks/CmdWebhooks.class
+me/olliejw/cmdwebhooks/SendWebhook$1.class
+me/olliejw/cmdwebhooks/Commands/Reload.class
+me/olliejw/cmdwebhooks/SendWebhook$EmbedObject$Thumbnail.class
+me/olliejw/cmdwebhooks/Commands/Send.class
+me/olliejw/cmdwebhooks/Events/OnJoin.class
+me/olliejw/cmdwebhooks/Events/OnLeave.class
+me/olliejw/cmdwebhooks/SendWebhook$EmbedObject$Field.class
+me/olliejw/cmdwebhooks/SendWebhook$EmbedObject$Image.class
+me/olliejw/cmdwebhooks/SendWebhook$EmbedObject$Footer.class
+me/olliejw/cmdwebhooks/SendWebhook$EmbedObject$Author.class
