@@ -1,13 +1,22 @@
-package me.olliejw.cmdwebhooks;
+package com.olliejw.cmdwebhooks;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.Map.Entry;
 
 public class SendWebhook {
@@ -42,7 +51,7 @@ public class SendWebhook {
         this.embeds.add(embed);
     }
 
-    public void execute() throws IOException {
+    public void execute() throws IOException, RateLimitException {
         if (this.content == null && this.embeds.isEmpty()) {
             throw new IllegalArgumentException("Set content or add at least one EmbedObject");
         } else {
@@ -131,7 +140,42 @@ public class SendWebhook {
             stream.write(json.toString().getBytes());
             stream.flush();
             stream.close();
-            connection.getInputStream().close();
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode == 429) {
+                // Handle rate limiting
+                int retryAfter = 5; // Default retry after 5 seconds
+                String retryAfterHeader = connection.getHeaderField("Retry-After");
+                if (retryAfterHeader != null) {
+                    try {
+                        retryAfter = Integer.parseInt(retryAfterHeader);
+                    } catch (NumberFormatException e) {
+                        // Use default if header is not a number
+                    }
+                }
+                throw new RateLimitException("Rate limited by Discord API", retryAfter * 1000);
+            } else if (responseCode >= 400) {
+                // Read error stream for more details
+                String errorMessage = "HTTP " + responseCode;
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        errorMessage += "\n" + line;
+                    }
+                } catch (Exception e) {
+                    // Ignore any errors reading the error stream
+                }
+                throw new IOException("Failed to send webhook: " + errorMessage);
+            } else {
+                // Success - read the response to ensure the connection is properly closed
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    while (reader.readLine() != null) {
+                        // Read and discard the response
+                    }
+                }
+            }
+
             connection.disconnect();
         }
     }

@@ -1,6 +1,6 @@
 name: CmdWebhooks
 version: ${project.version}
-main: me.olliejw.cmdwebhooks.CmdWebhooks
+main: com.olliejw.cmdwebhooks.CmdWebhooks
 api-version: 1.16
 authors: [ OllieJW ]
 softdepend: [ AdvancedBan ]

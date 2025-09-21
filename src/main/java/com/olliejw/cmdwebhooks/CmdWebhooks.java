@@ -1,31 +1,35 @@
-package me.olliejw.cmdwebhooks;
+package com.olliejw.cmdwebhooks;
 
-import me.olliejw.cmdwebhooks.Commands.Reload;
-import me.olliejw.cmdwebhooks.Commands.Send;
-import me.olliejw.cmdwebhooks.Events.OnCmd;
-import me.olliejw.cmdwebhooks.Events.OnJoin;
-import me.olliejw.cmdwebhooks.Events.OnLeave;
-import me.olliejw.cmdwebhooks.Events.OnMsg;
+import com.olliejw.cmdwebhooks.Commands.Reload;
+import com.olliejw.cmdwebhooks.Commands.Send;
+import com.olliejw.cmdwebhooks.Events.OnCmd;
+import com.olliejw.cmdwebhooks.Events.OnJoin;
+import com.olliejw.cmdwebhooks.Events.OnLeave;
+import com.olliejw.cmdwebhooks.Events.OnMsg;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.logging.Level;
 
 public class CmdWebhooks extends JavaPlugin implements Listener {
 
     private String webhook;
     private static CmdWebhooks instance;
+    private WebhookQueueManager webhookQueueManager;
 
     public static CmdWebhooks instance() {
         return instance;
     }
 
     public void onEnable() {
+        instance = this;
         this.saveDefaultConfig();
+        
+        // Initialize webhook queue manager
+        this.webhookQueueManager = new WebhookQueueManager(this);
 
         //============== COMMANDS ==============//
         this.getCommand("cmdw-reload").setExecutor(new Reload(this));
@@ -78,16 +82,39 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
         //================= END =================//
     }
 
-    private void sendDiscordMessage(String message) {
-        SendWebhook webhook = new SendWebhook(this.webhook);
-        webhook.setContent(message);
+    /**
+     * Sends a message to Discord using the webhook queue system
+     * @param message The message to send
+     */
+    public void sendDiscordMessage(String message) {
+        sendDiscordMessage(this.webhook, message);
+    }
 
-        try {
-            webhook.executeAsync();
-        } catch (Exception e) {
-            System.out.println("[CmdWebhook] Invalid webhook");
-            e.printStackTrace();
+    /**
+     * Sends a message to a specific webhook URL using the queue system
+     * @param webhookUrl The webhook URL to send the message to
+     * @param message The message to send
+     */
+    public void sendDiscordMessage(String webhookUrl, String message) {
+        if (webhookUrl == null || webhookUrl.isEmpty()) {
+            getLogger().warning("Cannot send webhook: Webhook URL is not set");
+            return;
         }
+
+        SendWebhook webhook = new SendWebhook(webhookUrl);
+        
+        // Apply global webhook settings if configured
+        if (getConfig().contains("WebhookName") && !getConfig().getString("WebhookName").isEmpty()) {
+            webhook.setUsername(getConfig().getString("WebhookName"));
+        }
+        
+        if (getConfig().contains("WebhookAvatar") && !getConfig().getString("WebhookAvatar").isEmpty()) {
+            webhook.setAvatarUrl(getConfig().getString("WebhookAvatar"));
+        }
+        
+        // Queue the webhook for sending
+        webhookQueueManager.queueWebhook(webhook, message, 0);
+        getLogger().log(Level.INFO, "Queued webhook message for delivery");
     }
 
     public void onDisable() {
@@ -97,5 +124,26 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
         if (cfg.getBoolean("Stop.Enabled")) {
             this.sendDiscordMessage(cfg.getString("Stop.Message"));
         }
+        
+        // Shutdown the webhook queue manager
+        if (webhookQueueManager != null) {
+            webhookQueueManager.shutdown();
+        }
+    }
+    
+    /**
+     * Get the WebhookQueueManager instance
+     * @return The WebhookQueueManager instance
+     */
+    public WebhookQueueManager getWebhookQueueManager() {
+        return webhookQueueManager;
+    }
+    
+    /**
+     * Get the plugin instance
+     * @return The CmdWebhooks instance
+     */
+    public static CmdWebhooks getInstance() {
+        return instance;
     }
 }

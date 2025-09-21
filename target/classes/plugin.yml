@@ -1,6 +1,6 @@
 name: CmdWebhooks
 version: 1.0.0
-main: me.olliejw.cmdwebhooks.CmdWebhooks
+main: com.olliejw.cmdwebhooks.CmdWebhooks
 api-version: 1.16
 authors: [ OllieJW ]
 softdepend: [ AdvancedBan ]
