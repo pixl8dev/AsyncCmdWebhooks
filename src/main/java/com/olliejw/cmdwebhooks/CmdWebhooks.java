@@ -92,7 +92,7 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
     }
 
     /**
-     * Sends a message to a specific webhook URL using the queue system
+     * Sends a message to a specific webhook URL asynchronously using the queue system
      * @param webhookUrl The webhook URL to send the message to
      * @param message The message to send
      */
@@ -113,16 +113,18 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
             webhook.setAvatarUrl(getConfig().getString("WebhookAvatar"));
         }
         
-        // Try to send the webhook directly first
-        try {
-            webhook.setContent(message);
-            webhook.execute();
-        } catch (RateLimitException e) {
-            // If we hit rate limit, queue it with a delay
-            webhookQueueManager.queueWebhook(webhook, message, 0);
-        } catch (Exception e) {
-            getLogger().log(Level.WARNING, "Failed to send webhook: " + e.getMessage());
-        }
+        // Always try to send asynchronously first
+        webhook.setContent(message);
+        new Thread(() -> {
+            try {
+                webhook.execute();
+            } catch (RateLimitException e) {
+                // If we hit rate limit, queue it with a delay
+                webhookQueueManager.queueWebhook(webhook, message, 0);
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, "Failed to send webhook: " + e.getMessage());
+            }
+        }).start();
     }
 
     public void onDisable() {

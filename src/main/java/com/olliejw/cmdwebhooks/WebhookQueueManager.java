@@ -65,7 +65,7 @@ public class WebhookQueueManager {
             return;
         }
 
-        QueuedWebhook queued = webhookQueue.peek();
+        final QueuedWebhook queued = webhookQueue.peek();
         if (queued == null) {
             webhookQueue.poll(); // Remove null entry if present
             processQueue();
@@ -74,27 +74,42 @@ public class WebhookQueueManager {
 
         lastRequestTime = System.currentTimeMillis();
         
-        try {
-            queued.webhook.setContent(queued.content);
-            queued.webhook.execute();
-            webhookQueue.poll(); // Remove successfully sent webhook
-            plugin.getLogger().info("Successfully sent queued webhook");
-        } catch (RateLimitException e) {
-            // If we hit rate limit again, update the retry count and keep in queue
-            if (queued.retryCount < MAX_RETRIES) {
-                queued.retryCount++;
-                plugin.getLogger().warning("Webhook rate limited. Attempt " + queued.retryCount + " of " + MAX_RETRIES);
-            } else {
-                plugin.getLogger().severe("Failed to send webhook after " + MAX_RETRIES + " attempts: " + e.getMessage());
-                webhookQueue.poll(); // Remove after max retries
+        // Process the webhook in a separate thread
+        new Thread(() -> {
+            try {
+                queued.webhook.setContent(queued.content);
+                queued.webhook.execute();
+                // Remove successfully sent webhook from the queue
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    webhookQueue.poll();
+                    plugin.getLogger().info("Successfully sent queued webhook");
+                    // Schedule next webhook in the queue
+                    retryTask = Bukkit.getScheduler().runTaskLater(plugin, this::processNextWebhook, RATE_LIMIT_DELAY / 50);
+                });
+            } catch (RateLimitException e) {
+                // If we hit rate limit again, update the retry count and keep in queue
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (queued.retryCount < MAX_RETRIES) {
+                        queued.retryCount++;
+                        plugin.getLogger().warning("Webhook rate limited. Attempt " + queued.retryCount + " of " + MAX_RETRIES);
+                        // Schedule retry with delay
+                        retryTask = Bukkit.getScheduler().runTaskLater(plugin, this::processNextWebhook, RATE_LIMIT_DELAY / 50);
+                    } else {
+                        plugin.getLogger().severe("Failed to send webhook after " + MAX_RETRIES + " attempts: " + e.getMessage());
+                        webhookQueue.poll(); // Remove after max retries
+                        // Process next webhook in the queue
+                        retryTask = Bukkit.getScheduler().runTaskLater(plugin, this::processNextWebhook, 0);
+                    }
+                });
+            } catch (Exception e) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    plugin.getLogger().severe("Failed to send webhook: " + e.getMessage());
+                    webhookQueue.poll(); // Remove on other errors
+                    // Process next webhook in the queue
+                    retryTask = Bukkit.getScheduler().runTaskLater(plugin, this::processNextWebhook, 0);
+                });
             }
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to send webhook: " + e.getMessage());
-            webhookQueue.poll(); // Remove on other errors
-        }
-
-        // Schedule next webhook in the queue
-        retryTask = Bukkit.getScheduler().runTaskLater(plugin, this::processNextWebhook, RATE_LIMIT_DELAY / 50);
+        }).start();
     }
 
     public void shutdown() {
