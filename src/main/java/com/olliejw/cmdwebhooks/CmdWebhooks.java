@@ -98,7 +98,7 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
      */
     public void sendDiscordMessage(String webhookUrl, String message) {
         if (webhookUrl == null || webhookUrl.isEmpty()) {
-            getLogger().warning("Cannot send webhook: Webhook URL is not set");
+            // Silently return if no webhook URL is set
             return;
         }
 
