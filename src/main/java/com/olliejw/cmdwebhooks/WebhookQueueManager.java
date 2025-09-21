@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.olliejw.cmdwebhooks.exceptions.RateLimitException;
+
 public class WebhookQueueManager {
     private final CmdWebhooks plugin;
     private final Queue<QueuedWebhook> webhookQueue;

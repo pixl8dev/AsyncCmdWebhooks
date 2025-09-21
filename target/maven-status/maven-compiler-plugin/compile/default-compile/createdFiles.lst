@@ -6,6 +6,7 @@ com/olliejw/cmdwebhooks/SendWebhook$EmbedObject$Footer.class
 com/olliejw/cmdwebhooks/Commands/Send.class
 com/olliejw/cmdwebhooks/CmdWebhooks.class
 com/olliejw/cmdwebhooks/Events/OnCmd.class
+com/olliejw/cmdwebhooks/exceptions/RateLimitException.class
 com/olliejw/cmdwebhooks/Events/OnLeave.class
 com/olliejw/cmdwebhooks/SendWebhook$EmbedObject.class
 com/olliejw/cmdwebhooks/SendWebhook$JSONObject.class

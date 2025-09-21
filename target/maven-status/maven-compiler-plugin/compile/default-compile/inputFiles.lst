@@ -4,6 +4,7 @@
 /Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/RateLimitException.java
 /Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/Commands/Reload.java
 /Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/WebhookQueueManager.java
+/Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/exceptions/RateLimitException.java
 /Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/Events/OnJoin.java
 /Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/SendWebhook.java
 /Users/px86/GitHub/AsyncCmdWebhooks/src/main/java/com/olliejw/cmdwebhooks/CmdWebhooks.java

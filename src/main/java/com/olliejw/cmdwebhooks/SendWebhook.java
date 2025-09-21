@@ -19,6 +19,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.olliejw.cmdwebhooks.exceptions.RateLimitException;
+
 public class SendWebhook {
     private final String url;
     private String content;

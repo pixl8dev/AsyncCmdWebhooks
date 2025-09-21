@@ -13,6 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.logging.Level;
+import com.olliejw.cmdwebhooks.exceptions.RateLimitException;
 
 public class CmdWebhooks extends JavaPlugin implements Listener {
 
@@ -112,9 +113,16 @@ public class CmdWebhooks extends JavaPlugin implements Listener {
             webhook.setAvatarUrl(getConfig().getString("WebhookAvatar"));
         }
         
-        // Queue the webhook for sending
-        webhookQueueManager.queueWebhook(webhook, message, 0);
-        getLogger().log(Level.INFO, "Queued webhook message for delivery");
+        // Try to send the webhook directly first
+        try {
+            webhook.setContent(message);
+            webhook.execute();
+        } catch (RateLimitException e) {
+            // If we hit rate limit, queue it with a delay
+            webhookQueueManager.queueWebhook(webhook, message, 0);
+        } catch (Exception e) {
+            getLogger().log(Level.WARNING, "Failed to send webhook: " + e.getMessage());
+        }
     }
 
     public void onDisable() {
